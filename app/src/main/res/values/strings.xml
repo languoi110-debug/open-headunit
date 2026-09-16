@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Open Headunit</string>
+    <string name="app_name">MapLink J2</string>
     <string name="menu">Menu</string>
     <string name="settings">Settings</string>
 
@@ -189,7 +189,16 @@
     <string name="video">Android Auto</string>
     <string name="self_mode">Self Mode</string>
     <string name="to_android_auto">To Android Auto</string>
-    <string name="title">Open Headunit</string>
+    <string name="title">MapLink J2</string>
+    <string name="maplink_tagline">Your S24 FE map, on the J2 Prime</string>
+    <string name="maplink_device_pair">S24 FE  →  J2 PRIME</string>
+    <string name="maplink_ready">MAP DISPLAY READY</string>
+    <string name="maplink_connect">CONNECT MAP</string>
+    <string name="maplink_wifi_title">Connect S24 FE</string>
+    <string name="maplink_wifi_hint">Wi-Fi · Headunit Server</string>
+    <string name="maplink_usb_title">USB OTG</string>
+    <string name="maplink_usb_hint">Stable backup connection</string>
+    <string name="maplink_settings_hint">480p · H.264 · 30 FPS</string>
     <string name="remove">Remove</string>
     <string name="usb">USB</string>
     <string name="wifi">WiFi</string>

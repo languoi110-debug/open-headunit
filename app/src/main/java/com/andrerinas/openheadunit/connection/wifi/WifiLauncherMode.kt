@@ -16,7 +16,10 @@ enum class WifiLauncherMode(
 
     companion object {
 
-        val DEFAULT: WifiLauncherMode = NATIVE
+        // MapLink defaults to Headunit Server discovery. This is the most compatible
+        // wireless path for an old Android 6 receiver such as the Samsung J2 Prime.
+        // Native AA remains available in Settings for hardware that supports it well.
+        val DEFAULT: WifiLauncherMode = AUTO
 
 
         fun byIdOrDefault(id: Int): WifiLauncherMode {

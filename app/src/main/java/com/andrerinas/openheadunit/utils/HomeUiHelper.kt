@@ -26,14 +26,14 @@ object HomeUiHelper {
         val buttons = listOfNotNull(selfBtn, usbBtn, wifiBtn, settingsBtn)
 
         if (isPortrait) {
-            val basePaddingDp = 12f
+            val basePaddingDp = 8f
             val adjustedPaddingPx = ((basePaddingDp * (2.0f - scaleFactor)).coerceIn(4f, 16f) * density).toInt()
             buttons.forEach { button ->
                 (button.parent as? View)?.setPadding(adjustedPaddingPx, adjustedPaddingPx, adjustedPaddingPx, adjustedPaddingPx)
             }
         } else {
-            val baseMarginDp = 40f
-            val adjustedMarginPx = ((baseMarginDp * (2.0f - scaleFactor)).coerceIn(12f, 48f) * density).toInt()
+            val baseMarginDp = 10f
+            val adjustedMarginPx = ((baseMarginDp * (2.0f - scaleFactor)).coerceIn(6f, 16f) * density).toInt()
             buttons.forEach { button ->
                 val params = button.layoutParams as? ViewGroup.MarginLayoutParams
                 if (params != null) {

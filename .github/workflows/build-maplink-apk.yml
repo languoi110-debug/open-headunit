@@ -1,0 +1,45 @@
+name: Build MapLink J2 APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [maplink-j2]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build MapLink J2 debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: ''
+
+      - name: Install Android and native build tools
+        run: |
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" \
+            "ndk;29.0.14206865" "cmake;3.22.1"
+
+      - name: Build APK
+        run: ./gradlew :app:assembleGithubDebug --no-daemon --stacktrace
+
+      - name: Upload MapLink APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: maplink-j2-debug-apk
+          path: app/build/outputs/apk/github/debug/*.apk
+          if-no-files-found: error

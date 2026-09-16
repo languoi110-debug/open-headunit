@@ -38,6 +38,39 @@ class Settings(private val context: Context) {
     private val prefs: SharedPreferences
         get() = _prefs ?: throw IllegalStateException("SharedPreferences in credential encrypted storage are not available until after user is unlocked")
 
+    /**
+     * Applies a conservative one-time profile for using a Samsung J2 Prime as a dedicated
+     * Android Auto map display. Existing user choices are never overwritten after the marker
+     * is stored, so every option can still be changed from Settings.
+     */
+    fun applyMapLinkJ2PresetIfNeeded() {
+        if (prefs.getBoolean(KEY_MAPLINK_J2_PRESET, false)) return
+
+        prefs.edit()
+            .putBoolean(KEY_MAPLINK_J2_PRESET, true)
+            .putInt("wifi-connection-mode", WifiLauncherMode.AUTO.id)
+            .putStringSet(
+                "connection-modes",
+                setOf(ConnectionMode.WIFI.key, ConnectionMode.USB.key)
+            )
+            .putInt("resolutionId", Resolution._800x480.id)
+            .putString("video-codec", "H.264")
+            .putInt("fps-limit", 30)
+            .putInt(KEY_SCREEN_ORIENTATION, ScreenOrientation.LANDSCAPE.value)
+            .putInt("view-mode", ViewMode.SURFACE.value)
+            .putInt("video-fit-mode", VideoFitMode.CONTAIN.value)
+            .putInt("fullscreen-mode", FullscreenMode.IMMERSIVE.value)
+            .putBoolean("gps-navigation", false)
+            .putBoolean("use-head-unit-microphone", false)
+            .putBoolean("enable-audio-sink", false)
+            .putBoolean("narrow-band-profile-cap", true)
+            .putBoolean("auto-connect-last-session", true)
+            .putBoolean("rename_notice_shown_v2", true)
+            .putString("vehicle-display-name", "MapLink J2")
+            .putString("vehicle-model", "Samsung J2 Prime")
+            .apply()
+    }
+
     fun isConnectingDevice(deviceCompat: UsbDeviceCompat): Boolean {
         val allowDevices = prefs.getStringSet("allow-devices", null) ?: return false
         return allowDevices.contains(deviceCompat.uniqueName)
@@ -1471,6 +1504,8 @@ class Settings(private val context: Context) {
 
     companion object {
         const val PREFS_NAME = "settings"
+
+        private const val KEY_MAPLINK_J2_PRESET = "maplink-j2-preset-v1"
 
         const val CONNECTION_TYPE_WIFI = "wifi"
         const val CONNECTION_TYPE_USB = "usb"

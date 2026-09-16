@@ -118,6 +118,7 @@ class App : Application(), Application.ActivityLifecycleCallbacks {
         component.suExecutor.register()
 
         val settings = Settings(this) // Create a Settings instance
+        settings.applyMapLinkJ2PresetIfNeeded()
         AppLog.init(settings, this) // Initialize AppLog with settings for conditional logging
 
         // Sync auto-start settings to device-protected storage so that

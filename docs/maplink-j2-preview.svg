@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b2530"/>
+      <stop offset="1" stop-color="#041015"/>
+    </linearGradient>
+    <linearGradient id="connect" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3a6"/>
+      <stop offset="1" stop-color="#087f69"/>
+    </linearGradient>
+    <linearGradient id="usb" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#28798e"/>
+      <stop offset="1" stop-color="#1a5263"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#000" flood-opacity=".28"/>
+    </filter>
+  </defs>
+  <rect width="960" height="540" fill="url(#bg)"/>
+  <g transform="translate(34 23)">
+    <path fill="#22d3a6" d="M17 0C7.6 0 0 7.6 0 17c0 12.8 17 30.9 17 30.9S34 29.8 34 17C34 7.6 26.4 0 17 0zm0 23.2a6.2 6.2 0 1 1 0-12.4 6.2 6.2 0 0 1 0 12.4z"/>
+    <path fill="#35a7ff" d="M58 18c-9.4 0-17 7.6-17 17 0 12.8 17 30.9 17 30.9S75 47.8 75 35c0-9.4-7.6-17-17-17zm0 23.2a6.2 6.2 0 1 1 0-12.4 6.2 6.2 0 0 1 0 12.4z"/>
+    <path fill="#fff" opacity=".86" d="M20 51v-7h12c6 0 10-4 10-10v-3c0-3.3 2.7-6 6-6h7v-6h-7c-6.6 0-12 5.4-12 12v3c0 2.2-1.8 4-4 4H20c-3.3 0-6 2.7-6 6v7z"/>
+  </g>
+  <text x="126" y="55" fill="#fff" font-family="Arial, sans-serif" font-size="30" font-weight="700">MapLink J2</text>
+  <text x="126" y="79" fill="#9cb3bc" font-family="Arial, sans-serif" font-size="15">Bản đồ từ S24 FE trên màn hình J2 Prime</text>
+  <rect x="728" y="28" width="198" height="38" rx="19" fill="#163f41" stroke="#377f70"/>
+  <text x="827" y="52" text-anchor="middle" fill="#22d3a6" font-family="Arial, sans-serif" font-size="14" font-weight="700">S24 FE  →  J2 PRIME</text>
+
+  <rect x="34" y="112" width="520" height="340" rx="26" fill="#12333f" fill-opacity=".9" stroke="#345865"/>
+  <rect x="51" y="130" width="486" height="246" rx="22" fill="url(#connect)" filter="url(#shadow)"/>
+  <path d="M219 215c17-18 35-18 52 0 16 17 34 17 51 0" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".95"/>
+  <path d="M210 199l9 16-9 16M331 199l-9 16 9 16" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="294" y="281" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="27" font-weight="700">KẾT NỐI BẢN ĐỒ</text>
+  <text x="294" y="406" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="19" font-weight="700">Kết nối S24 FE</text>
+  <text x="294" y="431" text-anchor="middle" fill="#9cb3bc" font-family="Arial, sans-serif" font-size="14">Wi‑Fi · Headunit Server</text>
+
+  <rect x="572" y="112" width="354" height="340" rx="26" fill="#12333f" fill-opacity=".9" stroke="#345865"/>
+  <rect x="589" y="130" width="320" height="246" rx="22" fill="url(#usb)" filter="url(#shadow)"/>
+  <path d="M749 193v76m0-76-16 16m16-16 16 16m-16 60-20-15m20 15 20-15M729 254v-16m40 16v-16" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="729" cy="235" r="6" fill="#fff"/><rect x="763" y="229" width="12" height="12" rx="2" fill="#fff"/>
+  <text x="749" y="307" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="26" font-weight="700">USB OTG</text>
+  <text x="749" y="406" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="19" font-weight="700">USB OTG</text>
+  <text x="749" y="431" text-anchor="middle" fill="#9cb3bc" font-family="Arial, sans-serif" font-size="14">Kết nối dự phòng ổn định</text>
+
+  <circle cx="45" cy="501" r="5" fill="#22d3a6"/>
+  <text x="60" y="506" fill="#22d3a6" font-family="Arial, sans-serif" font-size="12" font-weight="700">SẴN SÀNG HIỂN THỊ BẢN ĐỒ</text>
+  <text x="290" y="506" fill="#9cb3bc" font-family="Arial, sans-serif" font-size="12">480p · H.264 · 30 FPS</text>
+  <rect x="783" y="477" width="66" height="43" rx="15" fill="#244957"/>
+  <circle cx="816" cy="498" r="9" fill="none" stroke="#fff" stroke-width="3"/>
+  <path d="M816 483v6m0 18v6m-15-15h6m18 0h6m-26-11 4 4m14 14 4 4m0-22-4 4m-14 14-4 4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="862" y="477" width="64" height="43" rx="15" fill="#455e68" fill-opacity=".65"/>
+  <text x="894" y="503" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="13">Thoát</text>
+</svg>

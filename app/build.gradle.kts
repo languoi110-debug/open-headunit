@@ -95,11 +95,13 @@ android {
         // installs, testers) and existing users just get a normal update. Only the display name
         // changed to Open Headunit. The code package and namespace stay openheadunit, so the
         // applicationId deliberately differs from the namespace, like com.google.talk for Hangouts.
-        applicationId = "com.andrerinas.headunitrevived"
+        // Standalone MapLink build for the S24 FE -> J2 Prime two-phone setup.
+        // A distinct id lets it live beside the upstream Open Headunit app while testing.
+        applicationId = "vn.thanhtruong.maplinkj2"
         minSdk = 16
         targetSdk = 36
-        versionCode = 108
-        versionName = "3.4.0-beta3"
+        versionCode = 1
+        versionName = "1.0.0"
         setProperty("archivesBaseName", "${applicationId}_${versionName}")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true

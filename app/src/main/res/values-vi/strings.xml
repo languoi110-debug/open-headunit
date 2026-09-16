@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Open Headunit</string>
+    <string name="app_name">MapLink J2</string>
     <string name="menu">Menu</string>
     <string name="settings">Cài đặt</string>
 
@@ -12,7 +12,16 @@
     <string name="video">Android Auto</string>
     <string name="self_mode">Chế độ độc lập</string>
     <string name="to_android_auto">Sang Android Auto</string>
-    <string name="title">Open Headunit</string>
+    <string name="title">MapLink J2</string>
+    <string name="maplink_tagline">Bản đồ từ S24 FE trên màn hình J2 Prime</string>
+    <string name="maplink_device_pair">S24 FE  →  J2 PRIME</string>
+    <string name="maplink_ready">SẴN SÀNG HIỂN THỊ BẢN ĐỒ</string>
+    <string name="maplink_connect">KẾT NỐI BẢN ĐỒ</string>
+    <string name="maplink_wifi_title">Kết nối S24 FE</string>
+    <string name="maplink_wifi_hint">Wi‑Fi · Headunit Server</string>
+    <string name="maplink_usb_title">USB OTG</string>
+    <string name="maplink_usb_hint">Kết nối dự phòng ổn định</string>
+    <string name="maplink_settings_hint">480p · H.264 · 30 FPS</string>
     <string name="remove">Xoá</string>
     <string name="usb">USB</string>
     <string name="wifi">WiFi</string>

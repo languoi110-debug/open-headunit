@@ -94,7 +94,7 @@ class HomeFragment : Fragment() {
             wifi_text_view.text = getString(R.string.searching)
             wifi.alpha = 0.6f
         } else {
-            wifi_text_view.text = getString(R.string.wifi)
+            wifi_text_view.text = getString(R.string.maplink_wifi_title)
             wifi.alpha = 1.0f
         }
     }
