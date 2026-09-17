@@ -227,6 +227,16 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
 
+        <receiver
+            android:name=".mirror.MirrorWifiAutoStartReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".main.SettingsActivity"
             android:label="@string/settings"

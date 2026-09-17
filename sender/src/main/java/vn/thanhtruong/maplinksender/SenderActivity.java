@@ -87,6 +87,9 @@ public final class SenderActivity extends Activity {
         if (Build.VERSION.SDK_INT >= 26) startForegroundService(service); else startService(service);
         status.setText(R.string.sender_connecting);
         updateButton();
+        // Opening Maps here avoids a race where the service connects while the capture consent
+        // screen still has this activity stopped and its status receiver is not registered.
+        new Handler(Looper.getMainLooper()).postDelayed(this::openGoogleMaps, 1200L);
     }
 
     private void updateButton() {

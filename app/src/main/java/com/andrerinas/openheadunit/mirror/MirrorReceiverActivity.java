@@ -36,6 +36,7 @@ public final class MirrorReceiverActivity extends Activity implements SurfaceHol
     private Surface surface;
     private TextView statusView;
     private View statusPanel;
+    private View exitButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,18 +45,23 @@ public final class MirrorReceiverActivity extends Activity implements SurfaceHol
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        hideSystemUi();
         setContentView(R.layout.activity_mirror_receiver);
 
         statusView = findViewById(R.id.mirror_status);
         statusPanel = findViewById(R.id.mirror_status_panel);
         TextView ipView = findViewById(R.id.mirror_ip);
         ipView.setText(getString(R.string.mirror_ip, findLocalIpv4()));
-        findViewById(R.id.mirror_exit).setOnClickListener(v -> finish());
-        ((SurfaceView) findViewById(R.id.mirror_surface)).getHolder().addCallback(this);
+        exitButton = findViewById(R.id.mirror_exit);
+        exitButton.setOnClickListener(v -> finish());
+        SurfaceView surfaceView = findViewById(R.id.mirror_surface);
+        surfaceView.getHolder().addCallback(this);
+        surfaceView.setOnClickListener(v -> {
+            boolean show = statusPanel.getVisibility() != View.VISIBLE;
+            statusPanel.setVisibility(show ? View.VISIBLE : View.GONE);
+            exitButton.setVisibility(show ? View.VISIBLE : View.GONE);
+            if (!show) hideSystemUi();
+        });
     }
 
     @Override
@@ -128,6 +134,7 @@ public final class MirrorReceiverActivity extends Activity implements SurfaceHol
         decoder = codec;
         codec.configure(format, surface, null, 0);
         codec.start();
+        codec.setVideoScalingMode(MediaCodec.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
         setStatus(R.string.mirror_connected, false);
 
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
@@ -169,7 +176,26 @@ public final class MirrorReceiverActivity extends Activity implements SurfaceHol
         runOnUiThread(() -> {
             statusView.setText(textRes);
             statusPanel.setVisibility(showPanel ? View.VISIBLE : View.GONE);
+            exitButton.setVisibility(showPanel ? View.VISIBLE : View.GONE);
+            if (!showPanel) hideSystemUi();
         });
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) hideSystemUi();
+    }
+
+    private void hideSystemUi() {
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LOW_PROFILE
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
     private String findLocalIpv4() {

@@ -20,6 +20,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.view.Surface;
+import android.view.WindowManager;
+import android.util.DisplayMetrics;
 
 import java.io.DataOutputStream;
 import java.net.Socket;
@@ -37,8 +39,6 @@ public final class MirrorService extends Service {
     private static final int PORT = 6199;
     private static final int MAGIC = 0x4D4C4D31;
     private static final int VERSION = 1;
-    private static final int WIDTH = 540;
-    private static final int HEIGHT = 960;
     private static final int FPS = 24;
     private static final int BITRATE = 1_800_000;
     private static final AtomicBoolean RUNNING = new AtomicBoolean(false);
@@ -119,13 +119,16 @@ public final class MirrorService extends Service {
             }
             socket = receiver;
             DataOutputStream output = new DataOutputStream(receiver.getOutputStream());
+            int[] dimensions = captureDimensions();
+            int width = dimensions[0];
+            int height = dimensions[1];
             output.writeInt(MAGIC);
             output.writeInt(VERSION);
-            output.writeInt(WIDTH);
-            output.writeInt(HEIGHT);
+            output.writeInt(width);
+            output.writeInt(height);
             output.writeInt(FPS);
 
-            MediaFormat format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, WIDTH, HEIGHT);
+            MediaFormat format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height);
             format.setInteger(MediaFormat.KEY_COLOR_FORMAT,
                     MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
             format.setInteger(MediaFormat.KEY_BIT_RATE, BITRATE);
@@ -146,7 +149,7 @@ public final class MirrorService extends Service {
 
             int density = getResources().getDisplayMetrics().densityDpi;
             virtualDisplay = projection.createVirtualDisplay(
-                    "MapLinkMirror", WIDTH, HEIGHT, density,
+                    "MapLinkMirror", width, height, density,
                     DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                     inputSurface, null, null);
 
@@ -205,6 +208,19 @@ public final class MirrorService extends Service {
         output.writeInt(flags);
         output.write(data);
         output.flush();
+    }
+
+    private int[] captureDimensions() {
+        DisplayMetrics metrics = new DisplayMetrics();
+        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        windowManager.getDefaultDisplay().getRealMetrics(metrics);
+        int sourceWidth = Math.min(metrics.widthPixels, metrics.heightPixels);
+        int sourceHeight = Math.max(metrics.widthPixels, metrics.heightPixels);
+        int width = 540;
+        int height = Math.round(width * (sourceHeight / (float) sourceWidth));
+        // H.264 hardware codecs require even dimensions; cap for the J2 Prime decoder.
+        height = Math.min(1280, (height + 1) & ~1);
+        return new int[] { width, height };
     }
 
     private void fail(int message) {

@@ -6,7 +6,7 @@
     <string name="sender_steps">1. Bật hotspot trên J2 Prime\n2. Cho S24 FE kết nối hotspot đó\n3. Trên J2 mở MapLink → SOI MAP XE MÁY\n4. Nhấn nút bên dưới và chọn “Toàn bộ màn hình”</string>
     <string name="sender_start">BẮT ĐẦU TRUYỀN MÀN HÌNH</string>
     <string name="sender_stop">DỪNG TRUYỀN</string>
-    <string name="sender_ready">Sẵn sàng · H.264 · 540×960 · 24 FPS</string>
+    <string name="sender_ready">Sẵn sàng · Toàn màn hình · H.264 · 24 FPS</string>
     <string name="sender_running">Đang truyền tới J2 Prime. Hãy mở Google Maps và chọn xe máy.</string>
     <string name="sender_connecting">Đang tìm J2 Prime trong mạng Wi‑Fi…</string>
     <string name="sender_failed">Không tìm thấy J2 Prime. Hãy mở chế độ SOI MAP XE MÁY trên J2 trước.</string>

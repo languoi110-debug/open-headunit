@@ -41,7 +41,9 @@ Google Maps không cho dùng tuyến xe máy trong giao diện Android Auto. Map
 3. Trên J2 Prime, mở MapLink J2 và chọn **SOI MAP XE MÁY**. Giữ màn hình chờ mở.
 4. Trên S24 FE, mở MapLink S24 Sender và chọn **BẮT ĐẦU TRUYỀN MÀN HÌNH**.
 5. Trong hộp thoại hệ thống, cho phép chia sẻ **toàn bộ màn hình**. Ứng dụng tự tìm J2 Prime và mở Google Maps.
-6. Chọn tuyến xe máy trên S24 FE. Hình ảnh được truyền H.264 540 × 960, 24 FPS sang J2 Prime; âm thanh chỉ đường phát từ S24 FE.
+6. Chọn tuyến xe máy trên S24 FE. Hình ảnh được truyền H.264 thích ứng theo tỷ lệ màn hình, 24 FPS sang J2 Prime; âm thanh chỉ đường phát từ S24 FE.
+
+Từ bản Receiver 1.2.0, J2 Prime tự mở màn hình nhận khi kết nối Wi‑Fi, tự ẩn thanh trạng thái/nút điều khiển và phóng cắt giữa để phủ kín màn hình. Chạm một lần lên hình ảnh để hiện lại nút thoát. Sender 1.1.0 tự mở Google Maps sau khi người dùng xác nhận quyền chia sẻ màn hình.
 
 Chế độ này chỉ truyền hình ảnh, không điều khiển ngược S24 FE từ J2 Prime. Mỗi lần khởi động truyền, Android yêu cầu xác nhận quyền quay màn hình để bảo vệ riêng tư.
 
