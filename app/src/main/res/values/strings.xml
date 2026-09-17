@@ -199,6 +199,14 @@
     <string name="maplink_usb_title">USB OTG</string>
     <string name="maplink_usb_hint">Stable backup connection</string>
     <string name="maplink_settings_hint">480p · H.264 · 30 FPS</string>
+    <string name="maplink_mirror_connect">MOTORBIKE MAP</string>
+    <string name="maplink_mirror_title">MapLink Mirror</string>
+    <string name="maplink_mirror_hint">Phone screen · H.264</string>
+    <string name="mirror_waiting">Waiting for S24 FE…</string>
+    <string name="mirror_connected">Receiving the S24 FE screen</string>
+    <string name="mirror_disconnected">Disconnected — waiting to reconnect…</string>
+    <string name="mirror_ip">J2 address: %1$s · port 6199</string>
+    <string name="mirror_exit">EXIT MIRROR</string>
     <string name="remove">Remove</string>
     <string name="usb">USB</string>
     <string name="wifi">WiFi</string>

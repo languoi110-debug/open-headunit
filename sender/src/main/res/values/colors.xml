@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="sender_bg">#06171E</color>
+    <color name="sender_panel">#12333F</color>
+    <color name="sender_green">#22D3A6</color>
+    <color name="sender_blue">#2563EB</color>
+    <color name="sender_muted">#A8BEC6</color>
+</resources>

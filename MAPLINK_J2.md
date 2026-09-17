@@ -32,17 +32,30 @@ Lưu ý: với Android Auto 17.4 trở lên, phần lớn trình kích hoạt kh
 
 USB thường ổn định hơn Wi‑Fi nhưng J2 Prime có thể không vừa làm USB host vừa tự sạc với cáp OTG thường. Nếu dùng lâu trên xe, cần bộ chia/Y‑cable OTG có nguồn và phải kiểm tra khả năng tương thích trước.
 
+## Chế độ soi bản đồ xe máy (MapLink Mirror)
+
+Google Maps không cho dùng tuyến xe máy trong giao diện Android Auto. MapLink Mirror truyền trực tiếp màn hình S24 FE sang J2 Prime nên vẫn giữ được chế độ xe máy.
+
+1. Cài APK **MapLink J2 Receiver** trên J2 Prime và APK **MapLink S24 Sender** trên S24 FE.
+2. Bật điểm truy cập di động 2,4 GHz trên J2 Prime, sau đó cho S24 FE kết nối vào mạng này.
+3. Trên J2 Prime, mở MapLink J2 và chọn **SOI MAP XE MÁY**. Giữ màn hình chờ mở.
+4. Trên S24 FE, mở MapLink S24 Sender và chọn **BẮT ĐẦU TRUYỀN MÀN HÌNH**.
+5. Trong hộp thoại hệ thống, cho phép chia sẻ **toàn bộ màn hình**. Ứng dụng tự tìm J2 Prime và mở Google Maps.
+6. Chọn tuyến xe máy trên S24 FE. Hình ảnh được truyền H.264 540 × 960, 24 FPS sang J2 Prime; âm thanh chỉ đường phát từ S24 FE.
+
+Chế độ này chỉ truyền hình ảnh, không điều khiển ngược S24 FE từ J2 Prime. Mỗi lần khởi động truyền, Android yêu cầu xác nhận quyền quay màn hình để bảo vệ riêng tư.
+
 ## Build APK bằng GitHub Actions
 
 1. Đưa toàn bộ thư mục mã nguồn này lên một repository GitHub của bạn.
 2. Mở tab **Actions** → **Build MapLink J2 APK** → **Run workflow**.
-3. Khi tác vụ hoàn tất, tải artifact **maplink-j2-debug-apk**.
-4. Giải nén và chép APK sang J2 Prime để cài. Bật **Cho phép cài ứng dụng không rõ nguồn gốc** nếu Android yêu cầu.
+3. Khi tác vụ hoàn tất, tải hai artifact **maplink-j2-debug-apk** và **maplink-s24-sender-debug-apk**.
+4. Cài APK Receiver trên J2 Prime và Sender trên S24 FE. Bật **Cho phép cài ứng dụng không rõ nguồn gốc** nếu Android yêu cầu.
 
 Build thủ công dùng lệnh:
 
 ```bash
-./gradlew :app:assembleGithubDebug
+./gradlew :app:assembleGithubDebug :sender:assembleDebug
 ```
 
 APK nằm trong `app/build/outputs/apk/github/debug/`.

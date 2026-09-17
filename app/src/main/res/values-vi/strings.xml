@@ -22,6 +22,14 @@
     <string name="maplink_usb_title">USB OTG</string>
     <string name="maplink_usb_hint">Kết nối dự phòng ổn định</string>
     <string name="maplink_settings_hint">480p · H.264 · 30 FPS</string>
+    <string name="maplink_mirror_connect">SOI MAP XE MÁY</string>
+    <string name="maplink_mirror_title">MapLink Mirror</string>
+    <string name="maplink_mirror_hint">Màn hình S24 · H.264</string>
+    <string name="mirror_waiting">Đang chờ S24 FE truyền màn hình…</string>
+    <string name="mirror_connected">Đang nhận màn hình từ S24 FE</string>
+    <string name="mirror_disconnected">Đã ngắt — đang chờ kết nối lại…</string>
+    <string name="mirror_ip">Địa chỉ J2: %1$s · cổng 6199</string>
+    <string name="mirror_exit">THOÁT SOI MAP</string>
     <string name="remove">Xoá</string>
     <string name="usb">USB</string>
     <string name="wifi">WiFi</string>

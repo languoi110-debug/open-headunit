@@ -147,6 +147,56 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginStart="7dp"
+            android:layout_marginEnd="7dp"
+            android:layout_weight="1.35"
+            android:background="@drawable/bg_maplink_panel"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/mirror_button"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/gradient_mirror"
+                android:elevation="6dp"
+                android:maxLines="2"
+                android:text="@string/maplink_mirror_connect"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:backgroundTint="@null"
+                app:icon="@drawable/ic_screen_share_white"
+                app:iconGravity="textStart"
+                app:iconPadding="9dp"
+                app:iconSize="30dp"
+                app:iconTint="@android:color/white" />
+
+            <TextView
+                android:id="@+id/mirror_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:text="@string/maplink_mirror_title"
+                android:textColor="@android:color/white"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/maplink_mirror_hint"
+                android:textColor="@color/maplink_muted"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="7dp"
             android:layout_weight="1"
             android:background="@drawable/bg_maplink_panel"
             android:gravity="center"

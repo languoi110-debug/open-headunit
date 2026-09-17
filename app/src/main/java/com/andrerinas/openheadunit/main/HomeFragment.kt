@@ -80,6 +80,7 @@ class HomeFragment : Fragment() {
     private lateinit var usb: Button
     private lateinit var settings: Button
     private lateinit var wifi: Button
+    private lateinit var mirror: Button
     private lateinit var wifi_text_view: TextView
     private lateinit var exitButton: Button
     private lateinit var self_mode_text: TextView
@@ -110,6 +111,7 @@ class HomeFragment : Fragment() {
         usb = view.findViewById(R.id.usb_button)
         settings = view.findViewById(R.id.settings_button)
         wifi = view.findViewById(R.id.wifi_button)
+        mirror = view.findViewById(R.id.mirror_button)
         wifi_text_view = view.findViewById(R.id.wifi_text)
         exitButton = view.findViewById(R.id.exit_button)
         self_mode_text = view.findViewById(R.id.self_mode_text)
@@ -344,6 +346,10 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupListeners() {
+        mirror.setOnClickListener {
+            startActivity(Intent(requireContext(), com.andrerinas.openheadunit.mirror.MirrorReceiverActivity::class.java))
+        }
+
         exitButton.setOnClickListener {
             val appSettings = App.provide(requireContext()).settings
             val keepServiceAlive = appSettings.autoStartOnBoot ||

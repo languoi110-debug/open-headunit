@@ -1,4 +1,4 @@
-name: Build MapLink J2 APK
+name: Build MapLink Mirror APKs
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    name: Build MapLink J2 debug APK
+    name: Build MapLink J2 receiver and S24 sender
     runs-on: ubuntu-latest
 
     steps:
@@ -35,11 +35,18 @@ jobs:
             "ndk;29.0.14206865" "cmake;3.22.1"
 
       - name: Build APK
-        run: ./gradlew :app:assembleGithubDebug --no-daemon --stacktrace
+        run: ./gradlew :app:assembleGithubDebug :sender:assembleDebug --no-daemon --stacktrace
 
       - name: Upload MapLink APK
         uses: actions/upload-artifact@v4
         with:
           name: maplink-j2-debug-apk
           path: app/build/outputs/apk/github/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload S24 Sender APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: maplink-s24-sender-debug-apk
+          path: sender/build/outputs/apk/debug/*.apk
           if-no-files-found: error
