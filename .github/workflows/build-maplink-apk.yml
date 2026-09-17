@@ -29,6 +29,12 @@ jobs:
         with:
           packages: ''
 
+      - name: Restore stable MapLink test signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: maplink-debug-keystore-v1
+
       - name: Install Android and native build tools
         run: |
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" \
