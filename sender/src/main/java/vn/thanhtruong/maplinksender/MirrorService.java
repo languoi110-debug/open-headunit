@@ -15,17 +15,19 @@ import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
-import android.provider.Settings;
 import android.view.Surface;
 import android.view.WindowManager;
 import android.util.DisplayMetrics;
 
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,9 +53,9 @@ public final class MirrorService extends Service {
     private volatile MediaProjection projection;
     private volatile VirtualDisplay virtualDisplay;
     private volatile Surface inputSurface;
-    private PowerManager.WakeLock screenWakeLock;
-    private int previousBrightness = -1;
-    private int previousBrightnessMode = -1;
+    private PowerManager.WakeLock cpuWakeLock;
+    private WifiManager.WifiLock wifiLock;
+    private volatile boolean displayPoweredOff;
 
     static boolean isRunning() {
         return RUNNING.get();
@@ -108,7 +110,7 @@ public final class MirrorService extends Service {
             @Override public void onStop() { stopSelf(); }
         }, new Handler(Looper.getMainLooper()));
 
-        enableLowBrightnessMode();
+        acquireConnectionLocks();
 
         streamThread = new Thread(this::stream, "MapLinkMirrorSender");
         streamThread.start();
@@ -119,21 +121,9 @@ public final class MirrorService extends Service {
         try {
             sendStatus(R.string.sender_connecting);
             updateNotification(R.string.sender_connecting);
-            Socket receiver = NetworkFinder.findReceiver(this, PORT);
-            if (receiver == null) {
-                fail(R.string.sender_failed);
-                return;
-            }
-            socket = receiver;
-            DataOutputStream output = new DataOutputStream(receiver.getOutputStream());
             int[] dimensions = captureDimensions();
             int width = dimensions[0];
             int height = dimensions[1];
-            output.writeInt(MAGIC);
-            output.writeInt(VERSION);
-            output.writeInt(width);
-            output.writeInt(height);
-            output.writeInt(FPS);
 
             MediaFormat format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height);
             format.setInteger(MediaFormat.KEY_COLOR_FORMAT,
@@ -160,9 +150,7 @@ public final class MirrorService extends Service {
                     DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                     inputSurface, null, null);
 
-            sendStatus(R.string.sender_running);
-            updateNotification(R.string.sender_notification_text);
-            drainEncoder(codec, output);
+            drainEncoder(codec, width, height);
         } catch (Exception ignored) {
             if (RUNNING.get()) sendStatus(R.string.sender_failed);
         } finally {
@@ -170,29 +158,67 @@ public final class MirrorService extends Service {
         }
     }
 
-    private void drainEncoder(MediaCodec codec, DataOutputStream output) throws Exception {
+    private void drainEncoder(MediaCodec codec, int width, int height) throws Exception {
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
-        boolean sentFormatCsd = false;
+        DataOutputStream output = null;
+        byte[] csd0 = null;
+        byte[] csd1 = null;
+        long nextConnectAttemptMs = 0L;
         while (RUNNING.get()) {
+            if (output == null && System.currentTimeMillis() >= nextConnectAttemptMs) {
+                try {
+                    output = connectReceiver(width, height, csd0, csd1);
+                    if (output != null) {
+                        requestKeyFrame(codec);
+                        sendStatus(R.string.sender_running);
+                        updateNotification(R.string.sender_notification_text);
+                        powerOffPhysicalDisplayOnce();
+                    } else {
+                        nextConnectAttemptMs = System.currentTimeMillis() + 1000L;
+                    }
+                } catch (Exception connectionError) {
+                    closeReceiverConnection();
+                    output = null;
+                    nextConnectAttemptMs = System.currentTimeMillis() + 1000L;
+                }
+            }
+
             int index = codec.dequeueOutputBuffer(info, 10_000);
             if (index == MediaCodec.INFO_TRY_AGAIN_LATER) continue;
             if (index == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 MediaFormat changed = codec.getOutputFormat();
-                sentFormatCsd |= sendCsd(changed.getByteBuffer("csd-0"), output);
-                sentFormatCsd |= sendCsd(changed.getByteBuffer("csd-1"), output);
+                csd0 = copyBuffer(changed.getByteBuffer("csd-0"));
+                csd1 = copyBuffer(changed.getByteBuffer("csd-1"));
+                if (output != null) {
+                    try {
+                        sendCsd(csd0, output);
+                        sendCsd(csd1, output);
+                    } catch (IOException sendError) {
+                        closeReceiverConnection();
+                        output = null;
+                        sendStatus(R.string.sender_reconnecting);
+                        updateNotification(R.string.sender_reconnecting);
+                    }
+                }
                 continue;
             }
             if (index < 0) continue;
             ByteBuffer buffer = codec.getOutputBuffer(index);
-            if (buffer != null && info.size > 0) {
-                boolean duplicateConfig = sentFormatCsd
+            if (output != null && buffer != null && info.size > 0) {
+                boolean duplicateConfig = csd0 != null
                         && (info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0;
-                if (!duplicateConfig) {
+                if (!duplicateConfig) try {
                     byte[] data = new byte[info.size];
                     buffer.position(info.offset);
                     buffer.limit(info.offset + info.size);
                     buffer.get(data);
                     sendPacket(output, data, info.presentationTimeUs, info.flags);
+                } catch (IOException sendError) {
+                    closeReceiverConnection();
+                    output = null;
+                    nextConnectAttemptMs = System.currentTimeMillis() + 750L;
+                    sendStatus(R.string.sender_reconnecting);
+                    updateNotification(R.string.sender_reconnecting);
                 }
             }
             codec.releaseOutputBuffer(index, false);
@@ -200,16 +226,45 @@ public final class MirrorService extends Service {
         }
     }
 
-    private boolean sendCsd(ByteBuffer source, DataOutputStream output) throws Exception {
-        if (source == null || !source.hasRemaining()) return false;
+    private byte[] copyBuffer(ByteBuffer source) {
+        if (source == null || !source.hasRemaining()) return null;
         ByteBuffer copy = source.duplicate();
         byte[] data = new byte[copy.remaining()];
         copy.get(data);
-        sendPacket(output, data, 0L, MediaCodec.BUFFER_FLAG_CODEC_CONFIG);
-        return true;
+        return data;
     }
 
-    private void sendPacket(DataOutputStream output, byte[] data, long ptsUs, int flags) throws Exception {
+    private void sendCsd(byte[] data, DataOutputStream output) throws IOException {
+        if (data != null) sendPacket(output, data, 0L, MediaCodec.BUFFER_FLAG_CODEC_CONFIG);
+    }
+
+    private DataOutputStream connectReceiver(int width, int height, byte[] csd0, byte[] csd1)
+            throws Exception {
+        Socket receiver = NetworkFinder.findReceiver(this, PORT);
+        if (receiver == null) return null;
+        socket = receiver;
+        DataOutputStream output = new DataOutputStream(receiver.getOutputStream());
+        output.writeInt(MAGIC);
+        output.writeInt(VERSION);
+        output.writeInt(width);
+        output.writeInt(height);
+        output.writeInt(FPS);
+        sendCsd(csd0, output);
+        sendCsd(csd1, output);
+        output.flush();
+        return output;
+    }
+
+    private void requestKeyFrame(MediaCodec codec) {
+        try {
+            Bundle parameters = new Bundle();
+            parameters.putInt(MediaCodec.PARAMETER_KEY_REQUEST_SYNC_FRAME, 0);
+            codec.setParameters(parameters);
+        } catch (Exception ignored) { }
+    }
+
+    private void sendPacket(DataOutputStream output, byte[] data, long ptsUs, int flags)
+            throws IOException {
         output.writeInt(data.length);
         output.writeLong(ptsUs);
         output.writeInt(flags);
@@ -230,45 +285,44 @@ public final class MirrorService extends Service {
         return new int[] { width, height };
     }
 
-    @SuppressWarnings("deprecation")
-    private void enableLowBrightnessMode() {
-        try {
-            previousBrightness = Settings.System.getInt(
-                    getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
-            previousBrightnessMode = Settings.System.getInt(
-                    getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE);
-            if (Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this)) {
-                Settings.System.putInt(getContentResolver(),
-                        Settings.System.SCREEN_BRIGHTNESS_MODE,
-                        Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
-                Settings.System.putInt(getContentResolver(),
-                        Settings.System.SCREEN_BRIGHTNESS, 1);
-            }
-        } catch (Exception ignored) { }
-
+    private void acquireConnectionLocks() {
         PowerManager power = (PowerManager) getSystemService(POWER_SERVICE);
-        screenWakeLock = power.newWakeLock(
-                PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE,
-                "MapLink:KeepCaptureDisplayActive");
-        screenWakeLock.acquire(8 * 60 * 60 * 1000L);
+        cpuWakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                "MapLink:KeepSenderCpuActive");
+        cpuWakeLock.setReferenceCounted(false);
+        cpuWakeLock.acquire();
+
+        WifiManager wifi = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        if (wifi != null) {
+            wifiLock = wifi.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF,
+                    "MapLink:KeepSenderWifiActive");
+            wifiLock.setReferenceCounted(false);
+            wifiLock.acquire();
+        }
     }
 
-    private void restoreDisplaySettings() {
+    private void releaseConnectionLocks() {
         try {
-            if (screenWakeLock != null && screenWakeLock.isHeld()) screenWakeLock.release();
+            if (cpuWakeLock != null && cpuWakeLock.isHeld()) cpuWakeLock.release();
         } catch (Exception ignored) { }
-        screenWakeLock = null;
         try {
-            if ((Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this))
-                    && previousBrightness >= 0) {
-                Settings.System.putInt(getContentResolver(),
-                        Settings.System.SCREEN_BRIGHTNESS, previousBrightness);
-                if (previousBrightnessMode >= 0) {
-                    Settings.System.putInt(getContentResolver(),
-                            Settings.System.SCREEN_BRIGHTNESS_MODE, previousBrightnessMode);
-                }
-            }
+            if (wifiLock != null && wifiLock.isHeld()) wifiLock.release();
         } catch (Exception ignored) { }
+        cpuWakeLock = null;
+        wifiLock = null;
+    }
+
+    private void powerOffPhysicalDisplayOnce() {
+        if (displayPoweredOff) return;
+        displayPoweredOff = true;
+        new Handler(Looper.getMainLooper()).postDelayed(
+                () -> ShizukuShell.executeAsync(this, "cmd display power-off 0"), 2500L);
+    }
+
+    private void closeReceiverConnection() {
+        Socket current = socket;
+        socket = null;
+        try { if (current != null) current.close(); } catch (Exception ignored) { }
     }
 
     private void fail(int message) {
@@ -321,8 +375,12 @@ public final class MirrorService extends Service {
     @Override
     public void onDestroy() {
         RUNNING.set(false);
-        restoreDisplaySettings();
-        try { if (socket != null) socket.close(); } catch (Exception ignored) { }
+        if (displayPoweredOff) {
+            ShizukuShell.executeAsync(this, "cmd display power-on 0");
+            displayPoweredOff = false;
+        }
+        releaseConnectionLocks();
+        closeReceiverConnection();
         try { if (virtualDisplay != null) virtualDisplay.release(); } catch (Exception ignored) { }
         try { if (inputSurface != null) inputSurface.release(); } catch (Exception ignored) { }
         if (encoder != null) {

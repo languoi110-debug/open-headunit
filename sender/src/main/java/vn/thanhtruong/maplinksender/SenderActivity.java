@@ -10,17 +10,36 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.net.Uri;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import rikka.shizuku.Shizuku;
+
 public final class SenderActivity extends Activity {
     private static final int REQUEST_CAPTURE = 91;
     private static final int REQUEST_WRITE_SETTINGS = 92;
     private TextView status;
     private Button action;
+    private boolean continueAfterShizukuPermission;
+
+    private final Shizuku.OnRequestPermissionResultListener shizukuPermissionListener =
+            (requestCode, grantResult) -> {
+                if (requestCode != ShizukuShell.REQUEST_PERMISSION) return;
+                if (grantResult == getPackageManager().PERMISSION_GRANTED) {
+                    ShizukuShell.bind(getApplicationContext());
+                    if (continueAfterShizukuPermission) {
+                        continueAfterShizukuPermission = false;
+                        requestBatteryExemptionThenCapture();
+                    }
+                } else {
+                    continueAfterShizukuPermission = false;
+                    status.setText(R.string.sender_shizuku_denied);
+                }
+            };
 
     private final BroadcastReceiver statusReceiver = new BroadcastReceiver() {
         @Override
@@ -49,6 +68,8 @@ public final class SenderActivity extends Activity {
             }
         });
         updateButton();
+        try { Shizuku.addRequestPermissionResultListener(shizukuPermissionListener); }
+        catch (Throwable ignored) { }
     }
 
     @Override
@@ -69,6 +90,13 @@ public final class SenderActivity extends Activity {
         super.onStop();
     }
 
+    @Override
+    protected void onDestroy() {
+        try { Shizuku.removeRequestPermissionResultListener(shizukuPermissionListener); }
+        catch (Throwable ignored) { }
+        super.onDestroy();
+    }
+
     private void requestScreenCapture() {
         MediaProjectionManager manager =
                 (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
@@ -76,25 +104,41 @@ public final class SenderActivity extends Activity {
     }
 
     private void requestDimPermissionThenCapture() {
-        if (Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this)) {
-            requestScreenCapture();
+        if (!ShizukuShell.isRunning()) {
+            status.setText(R.string.sender_shizuku_not_running);
+            Toast.makeText(this, R.string.sender_shizuku_not_running, Toast.LENGTH_LONG).show();
             return;
         }
-        Toast.makeText(this, R.string.sender_dim_permission, Toast.LENGTH_LONG).show();
-        Intent permission = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS,
-                Uri.parse("package:" + getPackageName()));
-        startActivityForResult(permission, REQUEST_WRITE_SETTINGS);
+        if (!ShizukuShell.hasPermission()) {
+            continueAfterShizukuPermission = true;
+            status.setText(R.string.sender_shizuku_waiting);
+            ShizukuShell.requestPermission();
+            return;
+        }
+        ShizukuShell.bind(getApplicationContext());
+        requestBatteryExemptionThenCapture();
+    }
+
+    private void requestBatteryExemptionThenCapture() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            PowerManager power = (PowerManager) getSystemService(POWER_SERVICE);
+            if (!power.isIgnoringBatteryOptimizations(getPackageName())) {
+                try {
+                    Intent permission = new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                            Uri.parse("package:" + getPackageName()));
+                    startActivityForResult(permission, REQUEST_WRITE_SETTINGS);
+                    return;
+                } catch (Exception ignored) { }
+            }
+        }
+        requestScreenCapture();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_WRITE_SETTINGS) {
-            if (Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this)) {
-                requestScreenCapture();
-            } else {
-                status.setText(R.string.sender_dim_permission_denied);
-            }
+            requestScreenCapture();
             return;
         }
         if (requestCode != REQUEST_CAPTURE) return;
