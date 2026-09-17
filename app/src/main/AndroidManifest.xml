@@ -227,6 +227,12 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
 
+        <service
+            android:name=".mirror.MirrorWatchdogService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice"
+            android:stopWithTask="false" />
+
         <receiver
             android:name=".mirror.MirrorWifiAutoStartReceiver"
             android:enabled="true"

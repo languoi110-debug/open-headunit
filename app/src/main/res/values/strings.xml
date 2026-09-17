@@ -207,6 +207,9 @@
     <string name="mirror_disconnected">Disconnected — waiting to reconnect…</string>
     <string name="mirror_ip">J2 address: %1$s · port 6199</string>
     <string name="mirror_exit">EXIT MIRROR</string>
+    <string name="mirror_watchdog_title">MapLink receiver is active</string>
+    <string name="mirror_watchdog_text">Keeping the J2 screen and Wi-Fi connection active</string>
+    <string name="mirror_watchdog_stop">Exit mirror</string>
     <string name="remove">Remove</string>
     <string name="usb">USB</string>
     <string name="wifi">WiFi</string>

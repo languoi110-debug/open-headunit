@@ -16,6 +16,7 @@ import com.andrerinas.openheadunit.R;
 
 import java.io.DataInputStream;
 import java.net.Inet4Address;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -37,6 +38,17 @@ public final class MirrorReceiverActivity extends Activity implements SurfaceHol
     private TextView statusView;
     private View statusPanel;
     private View exitButton;
+    private static volatile boolean activityVisible;
+    private static volatile MirrorReceiverActivity activeInstance;
+
+    static boolean isActivityVisible() {
+        return activityVisible;
+    }
+
+    static void finishActiveInstance() {
+        MirrorReceiverActivity activity = activeInstance;
+        if (activity != null) activity.runOnUiThread(activity::finish);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,13 +59,17 @@ public final class MirrorReceiverActivity extends Activity implements SurfaceHol
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         hideSystemUi();
         setContentView(R.layout.activity_mirror_receiver);
+        MirrorWatchdogService.startMode(this);
 
         statusView = findViewById(R.id.mirror_status);
         statusPanel = findViewById(R.id.mirror_status_panel);
         TextView ipView = findViewById(R.id.mirror_ip);
         ipView.setText(getString(R.string.mirror_ip, findLocalIpv4()));
         exitButton = findViewById(R.id.mirror_exit);
-        exitButton.setOnClickListener(v -> finish());
+        exitButton.setOnClickListener(v -> {
+            MirrorWatchdogService.stopMode(this);
+            finish();
+        });
         SurfaceView surfaceView = findViewById(R.id.mirror_surface);
         surfaceView.getHolder().addCallback(this);
         surfaceView.setOnClickListener(v -> {
@@ -62,6 +78,20 @@ public final class MirrorReceiverActivity extends Activity implements SurfaceHol
             exitButton.setVisibility(show ? View.VISIBLE : View.GONE);
             if (!show) hideSystemUi();
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        activityVisible = true;
+        activeInstance = this;
+    }
+
+    @Override
+    protected void onStop() {
+        activityVisible = false;
+        if (activeInstance == this) activeInstance = null;
+        super.onStop();
     }
 
     @Override
@@ -90,8 +120,9 @@ public final class MirrorReceiverActivity extends Activity implements SurfaceHol
 
     private void serve() {
         try {
-            ServerSocket server = new ServerSocket(PORT);
+            ServerSocket server = new ServerSocket();
             server.setReuseAddress(true);
+            server.bind(new InetSocketAddress(PORT));
             serverSocket = server;
             while (running) {
                 setStatus(R.string.mirror_waiting, true);
