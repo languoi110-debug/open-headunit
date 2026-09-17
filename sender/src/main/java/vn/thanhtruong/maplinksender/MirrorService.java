@@ -19,6 +19,8 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.view.Surface;
 import android.view.WindowManager;
 import android.util.DisplayMetrics;
@@ -49,6 +51,9 @@ public final class MirrorService extends Service {
     private volatile MediaProjection projection;
     private volatile VirtualDisplay virtualDisplay;
     private volatile Surface inputSurface;
+    private PowerManager.WakeLock screenWakeLock;
+    private int previousBrightness = -1;
+    private int previousBrightnessMode = -1;
 
     static boolean isRunning() {
         return RUNNING.get();
@@ -102,6 +107,8 @@ public final class MirrorService extends Service {
         projection.registerCallback(new MediaProjection.Callback() {
             @Override public void onStop() { stopSelf(); }
         }, new Handler(Looper.getMainLooper()));
+
+        enableLowBrightnessMode();
 
         streamThread = new Thread(this::stream, "MapLinkMirrorSender");
         streamThread.start();
@@ -223,6 +230,47 @@ public final class MirrorService extends Service {
         return new int[] { width, height };
     }
 
+    @SuppressWarnings("deprecation")
+    private void enableLowBrightnessMode() {
+        try {
+            previousBrightness = Settings.System.getInt(
+                    getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
+            previousBrightnessMode = Settings.System.getInt(
+                    getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE);
+            if (Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this)) {
+                Settings.System.putInt(getContentResolver(),
+                        Settings.System.SCREEN_BRIGHTNESS_MODE,
+                        Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
+                Settings.System.putInt(getContentResolver(),
+                        Settings.System.SCREEN_BRIGHTNESS, 1);
+            }
+        } catch (Exception ignored) { }
+
+        PowerManager power = (PowerManager) getSystemService(POWER_SERVICE);
+        screenWakeLock = power.newWakeLock(
+                PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE,
+                "MapLink:KeepCaptureDisplayActive");
+        screenWakeLock.acquire(8 * 60 * 60 * 1000L);
+    }
+
+    private void restoreDisplaySettings() {
+        try {
+            if (screenWakeLock != null && screenWakeLock.isHeld()) screenWakeLock.release();
+        } catch (Exception ignored) { }
+        screenWakeLock = null;
+        try {
+            if ((Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this))
+                    && previousBrightness >= 0) {
+                Settings.System.putInt(getContentResolver(),
+                        Settings.System.SCREEN_BRIGHTNESS, previousBrightness);
+                if (previousBrightnessMode >= 0) {
+                    Settings.System.putInt(getContentResolver(),
+                            Settings.System.SCREEN_BRIGHTNESS_MODE, previousBrightnessMode);
+                }
+            }
+        } catch (Exception ignored) { }
+    }
+
     private void fail(int message) {
         sendStatus(message);
         updateNotification(message);
@@ -273,6 +321,7 @@ public final class MirrorService extends Service {
     @Override
     public void onDestroy() {
         RUNNING.set(false);
+        restoreDisplaySettings();
         try { if (socket != null) socket.close(); } catch (Exception ignored) { }
         try { if (virtualDisplay != null) virtualDisplay.release(); } catch (Exception ignored) { }
         try { if (inputSurface != null) inputSurface.release(); } catch (Exception ignored) { }

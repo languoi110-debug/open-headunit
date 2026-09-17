@@ -3,7 +3,7 @@
     <string name="app_name">MapLink S24 Sender</string>
     <string name="sender_title">SOI MAP XE MÁY</string>
     <string name="sender_subtitle">Truyền màn hình S24 FE sang J2 Prime</string>
-    <string name="sender_steps">1. Bật hotspot trên J2 Prime\n2. Cho S24 FE kết nối hotspot đó\n3. Trên J2 mở MapLink → SOI MAP XE MÁY\n4. Nhấn nút bên dưới và chọn “Toàn bộ màn hình”</string>
+    <string name="sender_steps">1. Cho S24 FE và J2 Prime dùng chung Wi‑Fi\n2. Trên J2 mở MapLink → SOI MAP XE MÁY\n3. Nhấn nút bên dưới và chọn “Toàn bộ màn hình”\n4. Sender tự giảm sáng S24; không bấm nút nguồn khi đang truyền</string>
     <string name="sender_start">BẮT ĐẦU TRUYỀN MÀN HÌNH</string>
     <string name="sender_stop">DỪNG TRUYỀN</string>
     <string name="sender_ready">Sẵn sàng · Toàn màn hình · H.264 · 24 FPS</string>
@@ -11,6 +11,8 @@
     <string name="sender_connecting">Đang tìm J2 Prime trong mạng Wi‑Fi…</string>
     <string name="sender_failed">Không tìm thấy J2 Prime. Hãy mở chế độ SOI MAP XE MÁY trên J2 trước.</string>
     <string name="sender_permission_denied">Bạn chưa cho phép truyền màn hình.</string>
+    <string name="sender_dim_permission">Hãy bật “Cho phép sửa đổi cài đặt hệ thống” để Sender giảm sáng nhưng vẫn tiếp tục truyền.</string>
+    <string name="sender_dim_permission_denied">Chưa được cấp quyền giảm sáng. Bật quyền rồi nhấn bắt đầu lại.</string>
     <string name="sender_notification_title">MapLink đang soi bản đồ</string>
     <string name="sender_notification_text">Đang truyền màn hình S24 FE sang J2 Prime</string>
     <string name="sender_notification_stop">Dừng</string>

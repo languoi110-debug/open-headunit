@@ -11,12 +11,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.net.Uri;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public final class SenderActivity extends Activity {
     private static final int REQUEST_CAPTURE = 91;
+    private static final int REQUEST_WRITE_SETTINGS = 92;
     private TextView status;
     private Button action;
 
@@ -43,7 +45,7 @@ public final class SenderActivity extends Activity {
                 status.setText(R.string.sender_ready);
                 updateButton();
             } else {
-                requestScreenCapture();
+                requestDimPermissionThenCapture();
             }
         });
         updateButton();
@@ -73,9 +75,28 @@ public final class SenderActivity extends Activity {
         startActivityForResult(manager.createScreenCaptureIntent(), REQUEST_CAPTURE);
     }
 
+    private void requestDimPermissionThenCapture() {
+        if (Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this)) {
+            requestScreenCapture();
+            return;
+        }
+        Toast.makeText(this, R.string.sender_dim_permission, Toast.LENGTH_LONG).show();
+        Intent permission = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS,
+                Uri.parse("package:" + getPackageName()));
+        startActivityForResult(permission, REQUEST_WRITE_SETTINGS);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_WRITE_SETTINGS) {
+            if (Build.VERSION.SDK_INT < 23 || Settings.System.canWrite(this)) {
+                requestScreenCapture();
+            } else {
+                status.setText(R.string.sender_dim_permission_denied);
+            }
+            return;
+        }
         if (requestCode != REQUEST_CAPTURE) return;
         if (resultCode != RESULT_OK || data == null) {
             status.setText(R.string.sender_permission_denied);

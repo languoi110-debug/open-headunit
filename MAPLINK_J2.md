@@ -45,6 +45,8 @@ Google Maps không cho dùng tuyến xe máy trong giao diện Android Auto. Map
 
 Từ bản Receiver 1.2.0, J2 Prime tự mở màn hình nhận khi kết nối Wi‑Fi, tự ẩn thanh trạng thái/nút điều khiển và phóng cắt giữa để phủ kín màn hình. Chạm một lần lên hình ảnh để hiện lại nút thoát. Sender 1.1.0 tự mở Google Maps sau khi người dùng xác nhận quyền chia sẻ màn hình.
 
+Sender 1.2.0 thêm chế độ giảm sáng: ứng dụng hạ độ sáng S24 FE xuống mức thấp nhất và giữ màn hình hoạt động trong lúc truyền, sau đó khôi phục độ sáng cũ khi dừng. Android không cho MediaProjection tiếp tục khi người dùng tắt màn hình thật bằng nút nguồn, vì vậy không bấm nút nguồn trong phiên; hãy dùng chế độ giảm sáng tự động này.
+
 Chế độ này chỉ truyền hình ảnh, không điều khiển ngược S24 FE từ J2 Prime. Mỗi lần khởi động truyền, Android yêu cầu xác nhận quyền quay màn hình để bảo vệ riêng tư.
 
 ## Build APK bằng GitHub Actions
