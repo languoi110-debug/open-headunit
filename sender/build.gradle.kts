@@ -10,8 +10,8 @@ android {
         applicationId = "vn.thanhtruong.maplinksender"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.3.0"
+        versionCode = 5
+        versionName = "1.4.0"
         setProperty("archivesBaseName", "MapLink-S24-Sender_${versionName}")
     }
 
@@ -26,11 +26,4 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    buildFeatures {
-        aidl = true
-    }
-}
-
-dependencies {
-    implementation("dev.rikka.shizuku:api:13.1.5")
 }

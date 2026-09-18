@@ -55,7 +55,6 @@ public final class MirrorService extends Service {
     private volatile Surface inputSurface;
     private PowerManager.WakeLock cpuWakeLock;
     private WifiManager.WifiLock wifiLock;
-    private volatile boolean displayPoweredOff;
 
     static boolean isRunning() {
         return RUNNING.get();
@@ -172,7 +171,6 @@ public final class MirrorService extends Service {
                         requestKeyFrame(codec);
                         sendStatus(R.string.sender_running);
                         updateNotification(R.string.sender_notification_text);
-                        powerOffPhysicalDisplayOnce();
                     } else {
                         nextConnectAttemptMs = System.currentTimeMillis() + 1000L;
                     }
@@ -287,8 +285,11 @@ public final class MirrorService extends Service {
 
     private void acquireConnectionLocks() {
         PowerManager power = (PowerManager) getSystemService(POWER_SERVICE);
-        cpuWakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                "MapLink:KeepSenderCpuActive");
+        // Keep the logical and physical display active. Locking the S24 display stops Android's
+        // MediaProjection stream, so this no-Shizuku build deliberately never powers it off.
+        cpuWakeLock = power.newWakeLock(
+                PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE,
+                "MapLink:KeepSenderScreenActive");
         cpuWakeLock.setReferenceCounted(false);
         cpuWakeLock.acquire();
 
@@ -310,13 +311,6 @@ public final class MirrorService extends Service {
         } catch (Exception ignored) { }
         cpuWakeLock = null;
         wifiLock = null;
-    }
-
-    private void powerOffPhysicalDisplayOnce() {
-        if (displayPoweredOff) return;
-        displayPoweredOff = true;
-        new Handler(Looper.getMainLooper()).postDelayed(
-                () -> ShizukuShell.executeAsync(this, "cmd display power-off 0"), 2500L);
     }
 
     private void closeReceiverConnection() {
@@ -375,10 +369,6 @@ public final class MirrorService extends Service {
     @Override
     public void onDestroy() {
         RUNNING.set(false);
-        if (displayPoweredOff) {
-            ShizukuShell.executeAsync(this, "cmd display power-on 0");
-            displayPoweredOff = false;
-        }
         releaseConnectionLocks();
         closeReceiverConnection();
         try { if (virtualDisplay != null) virtualDisplay.release(); } catch (Exception ignored) { }

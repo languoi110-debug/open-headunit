@@ -17,29 +17,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import rikka.shizuku.Shizuku;
-
 public final class SenderActivity extends Activity {
     private static final int REQUEST_CAPTURE = 91;
     private static final int REQUEST_WRITE_SETTINGS = 92;
     private TextView status;
     private Button action;
-    private boolean continueAfterShizukuPermission;
-
-    private final Shizuku.OnRequestPermissionResultListener shizukuPermissionListener =
-            (requestCode, grantResult) -> {
-                if (requestCode != ShizukuShell.REQUEST_PERMISSION) return;
-                if (grantResult == getPackageManager().PERMISSION_GRANTED) {
-                    ShizukuShell.bind(getApplicationContext());
-                    if (continueAfterShizukuPermission) {
-                        continueAfterShizukuPermission = false;
-                        requestBatteryExemptionThenCapture();
-                    }
-                } else {
-                    continueAfterShizukuPermission = false;
-                    status.setText(R.string.sender_shizuku_denied);
-                }
-            };
 
     private final BroadcastReceiver statusReceiver = new BroadcastReceiver() {
         @Override
@@ -64,12 +46,10 @@ public final class SenderActivity extends Activity {
                 status.setText(R.string.sender_ready);
                 updateButton();
             } else {
-                requestDimPermissionThenCapture();
+                requestBatteryExemptionThenCapture();
             }
         });
         updateButton();
-        try { Shizuku.addRequestPermissionResultListener(shizukuPermissionListener); }
-        catch (Throwable ignored) { }
     }
 
     @Override
@@ -90,33 +70,10 @@ public final class SenderActivity extends Activity {
         super.onStop();
     }
 
-    @Override
-    protected void onDestroy() {
-        try { Shizuku.removeRequestPermissionResultListener(shizukuPermissionListener); }
-        catch (Throwable ignored) { }
-        super.onDestroy();
-    }
-
     private void requestScreenCapture() {
         MediaProjectionManager manager =
                 (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
         startActivityForResult(manager.createScreenCaptureIntent(), REQUEST_CAPTURE);
-    }
-
-    private void requestDimPermissionThenCapture() {
-        if (!ShizukuShell.isRunning()) {
-            status.setText(R.string.sender_shizuku_not_running);
-            Toast.makeText(this, R.string.sender_shizuku_not_running, Toast.LENGTH_LONG).show();
-            return;
-        }
-        if (!ShizukuShell.hasPermission()) {
-            continueAfterShizukuPermission = true;
-            status.setText(R.string.sender_shizuku_waiting);
-            ShizukuShell.requestPermission();
-            return;
-        }
-        ShizukuShell.bind(getApplicationContext());
-        requestBatteryExemptionThenCapture();
     }
 
     private void requestBatteryExemptionThenCapture() {
