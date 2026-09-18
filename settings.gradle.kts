@@ -1,7 +1,7 @@
 import org.gradle.kotlin.dsl.maven
 import org.gradle.kotlin.dsl.repositories
 
-include(":app", ":contract", ":sender")
+include(":app", ":contract", ":sender", ":receiver")
 
 
 rootProject.name = "open-headunit"

@@ -41,13 +41,13 @@ jobs:
             "ndk;29.0.14206865" "cmake;3.22.1"
 
       - name: Build APK
-        run: ./gradlew :app:assembleGithubDebug :sender:assembleDebug --no-daemon --stacktrace
+        run: ./gradlew :receiver:assembleDebug :sender:assembleDebug --no-daemon --stacktrace
 
       - name: Upload MapLink APK
         uses: actions/upload-artifact@v4
         with:
-          name: maplink-j2-debug-apk
-          path: app/build/outputs/apk/github/debug/*.apk
+          name: maplink-j2-standalone-debug-apk
+          path: receiver/build/outputs/apk/debug/*.apk
           if-no-files-found: error
 
       - name: Upload S24 Sender APK

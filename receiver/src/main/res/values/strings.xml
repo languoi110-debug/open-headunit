@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MapLink J2</string>
+    <string name="waiting">Đang chờ S24 FE truyền màn hình…</string>
+    <string name="connected">Đang nhận màn hình từ S24 FE</string>
+    <string name="disconnected">Đã ngắt — đang tự chờ kết nối lại…</string>
+    <string name="ip_address">Địa chỉ J2: %1$s · cổng 6199</string>
+    <string name="exit">THOÁT SOI MAP</string>
+    <string name="keep_alive_title">MapLink J2 đang hoạt động</string>
+    <string name="keep_alive_text">Giữ Wi‑Fi và màn hình nhận không bị thoát</string>
+</resources>
