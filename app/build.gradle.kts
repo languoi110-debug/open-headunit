@@ -97,15 +97,23 @@ android {
         // applicationId deliberately differs from the namespace, like com.google.talk for Hangouts.
         // Standalone MapLink build for the S24 FE -> J2 Prime two-phone setup.
         // A distinct id lets it live beside the upstream Open Headunit app while testing.
-        applicationId = "vn.thanhtruong.maplinkj2"
+        // Clean-install package id avoids Samsung Package Installer keeping a stale signature
+        // record from earlier test builds under vn.thanhtruong.maplinkj2.
+        applicationId = "vn.thanhtruong.maplinkj2clean"
         minSdk = 16
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.3.0"
+        versionCode = 5
+        versionName = "1.3.1"
         setProperty("archivesBaseName", "${applicationId}_${versionName}")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
         vectorDrawables.useSupportLibrary = true
+
+        // J2 Prime runs 32-bit ARM. Removing emulator and 64-bit libraries makes installation
+        // require substantially less free space on this low-storage device.
+        ndk {
+            abiFilters += listOf("armeabi-v7a")
+        }
 
         // Store available locales in BuildConfig for runtime access
         // This is scanned at build time from values-XX directories
