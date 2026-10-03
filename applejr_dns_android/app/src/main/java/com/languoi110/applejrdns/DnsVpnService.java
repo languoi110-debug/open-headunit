@@ -90,6 +90,7 @@ public class DnsVpnService extends VpnService {
     private final ExecutorService dnsWorkers = Executors.newFixedThreadPool(4);
 
     private volatile boolean active;
+    private volatile boolean stopping;
     private ParcelFileDescriptor tun;
     private Thread readerThread;
     private List<InetAddress> underlyingDns = new ArrayList<>();
@@ -108,6 +109,7 @@ public class DnsVpnService extends VpnService {
             return START_NOT_STICKY;
         }
 
+        stopping = false;
         startForeground(NOTIFICATION_ID, buildNotification("Đang khởi động DNS…"));
         if (!active) {
             startVpn();
@@ -155,7 +157,7 @@ public class DnsVpnService extends VpnService {
                     }
                 }
             } catch (Throwable t) {
-                if (active || tun == null) {
+                if (!stopping) {
                     recordError(t);
                 }
             } finally {
@@ -370,6 +372,7 @@ public class DnsVpnService extends VpnService {
     }
 
     private void shutdown() {
+        stopping = true;
         active = false;
         prefs().edit().putBoolean(KEY_RUNNING, false).apply();
         closeTun();
@@ -397,6 +400,7 @@ public class DnsVpnService extends VpnService {
 
     @Override
     public void onDestroy() {
+        stopping = true;
         active = false;
         prefs().edit().putBoolean(KEY_RUNNING, false).apply();
         closeTun();
